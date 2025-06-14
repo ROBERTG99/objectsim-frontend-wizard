@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import Navigation from '@/components/Navigation';
 import DllUpload from '@/components/DllUpload';
 import DllManager from '@/components/DllManager';
 import SimulationControls from '@/components/SimulationControls';
@@ -55,12 +56,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Navigation />
+      
       <div className="container mx-auto p-6 max-w-7xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">ObjectSim</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Dynamic Library Management</h1>
           <p className="text-gray-600 text-lg">
-            Dynamic Library Management and Simulation Platform
+            Upload, manage, and simulate your .NET DLL files
           </p>
         </div>
 
