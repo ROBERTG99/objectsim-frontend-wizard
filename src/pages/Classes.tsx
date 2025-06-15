@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Plus, Edit, Trash2, FileText } from 'lucide-react';
+import CreateClassModal from '@/components/modals/CreateClassModal';
+import { ClassFormData } from '@/schemas/formSchemas';
+import { useToast } from '@/hooks/use-toast';
 
 const Classes = () => {
   const [classes, setClasses] = useState([
@@ -31,6 +32,27 @@ const Classes = () => {
     },
   ]);
 
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleCreateClass = (data: ClassFormData) => {
+    const newClass = {
+      id: classes.length + 1,
+      name: data.name,
+      namespace: data.namespace || 'Default',
+      isAbstract: data.isAbstract,
+      isSealed: data.isSealed,
+      parentClass: data.inheritsFrom || null,
+      attributes: data.attributes.length,
+      methods: 0
+    };
+    setClasses([...classes, newClass]);
+    toast({
+      title: "Clase creada",
+      description: `La clase "${data.name}" ha sido creada exitosamente.`,
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -39,36 +61,14 @@ const Classes = () => {
           <h1 className="text-3xl font-bold text-gray-900">Clases</h1>
           <p className="text-gray-600">Gestiona las clases del sistema</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button 
+          className="flex items-center gap-2"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
           <Plus className="h-4 w-4" />
           Nueva Clase
         </Button>
       </div>
-
-      {/* Create Class */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Crear Nueva Clase</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input placeholder="Nombre de la clase" />
-            <Input placeholder="Namespace asociado" />
-          </div>
-          <Input placeholder="Clase padre (opcional)" />
-          <div className="flex gap-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox id="abstract" />
-              <label htmlFor="abstract">Abstracta</label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox id="sealed" />
-              <label htmlFor="sealed">Sellada</label>
-            </div>
-          </div>
-          <Button>Crear Clase</Button>
-        </CardContent>
-      </Card>
 
       {/* Classes List */}
       <div className="grid gap-4">
@@ -84,6 +84,7 @@ const Classes = () => {
                       <Badge variant="outline">{class_.namespace}</Badge>
                       {class_.isAbstract && <Badge>Abstracta</Badge>}
                       {class_.isSealed && <Badge>Sellada</Badge>}
+                      {class_.parentClass && <Badge variant="secondary">Hereda de {class_.parentClass}</Badge>}
                       <Badge variant="secondary">{class_.attributes} atributos</Badge>
                       <Badge variant="secondary">{class_.methods} métodos</Badge>
                     </div>
@@ -102,6 +103,14 @@ const Classes = () => {
           </Card>
         ))}
       </div>
+
+      <CreateClassModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateClass}
+        availableNamespaces={['System.Core', 'Business.Logic', 'Data.Access', 'Domain.Models']}
+        availableClasses={['BaseEntity', 'Entity', 'Model']}
+      />
     </div>
   );
 };

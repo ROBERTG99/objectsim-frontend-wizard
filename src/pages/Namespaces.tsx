@@ -5,14 +5,19 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Package } from 'lucide-react';
+import CreateNamespaceModal from '@/components/modals/CreateNamespaceModal';
+import { NamespaceFormData } from '@/schemas/formSchemas';
+import { useToast } from '@/hooks/use-toast';
 
 const Namespaces = () => {
   const [namespaces, setNamespaces] = useState([
-    { id: 1, name: 'System.Core', classes: 3, interfaces: 2 },
-    { id: 2, name: 'Business.Logic', classes: 5, interfaces: 1 },
+    { id: 1, name: 'System.Core', classes: 3, interfaces: 2, description: 'Core system components' },
+    { id: 2, name: 'Business.Logic', classes: 5, interfaces: 1, description: 'Business logic layer' },
   ]);
   
   const [newNamespace, setNewNamespace] = useState('');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleCreateNamespace = () => {
     if (newNamespace.trim()) {
@@ -20,11 +25,31 @@ const Namespaces = () => {
         id: namespaces.length + 1,
         name: newNamespace,
         classes: 0,
-        interfaces: 0
+        interfaces: 0,
+        description: ''
       };
       setNamespaces([...namespaces, newNs]);
       setNewNamespace('');
+      toast({
+        title: "Namespace creado",
+        description: `El namespace "${newNamespace}" ha sido creado exitosamente.`,
+      });
     }
+  };
+
+  const handleCreateFromModal = (data: NamespaceFormData) => {
+    const newNs = {
+      id: namespaces.length + 1,
+      name: data.name,
+      classes: 0,
+      interfaces: 0,
+      description: data.description || ''
+    };
+    setNamespaces([...namespaces, newNs]);
+    toast({
+      title: "Namespace creado",
+      description: `El namespace "${data.name}" ha sido creado exitosamente.`,
+    });
   };
 
   return (
@@ -35,7 +60,10 @@ const Namespaces = () => {
           <h1 className="text-3xl font-bold text-gray-900">Namespaces</h1>
           <p className="text-gray-600">Gestiona los namespaces del sistema</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button 
+          className="flex items-center gap-2"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
           <Plus className="h-4 w-4" />
           Nuevo Namespace
         </Button>
@@ -71,7 +99,10 @@ const Namespaces = () => {
                   <Package className="h-6 w-6 text-blue-500" />
                   <div>
                     <h3 className="text-lg font-semibold">{namespace.name}</h3>
-                    <div className="flex gap-2 mt-1">
+                    {namespace.description && (
+                      <p className="text-sm text-gray-600 mt-1">{namespace.description}</p>
+                    )}
+                    <div className="flex gap-2 mt-2">
                       <Badge variant="secondary">
                         {namespace.classes} clases
                       </Badge>
@@ -94,6 +125,12 @@ const Namespaces = () => {
           </Card>
         ))}
       </div>
+
+      <CreateNamespaceModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateFromModal}
+      />
     </div>
   );
 };

@@ -2,10 +2,11 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit, Trash2, Settings } from 'lucide-react';
+import CreateMethodModal from '@/components/modals/CreateMethodModal';
+import { MethodFormData } from '@/schemas/formSchemas';
+import { useToast } from '@/hooks/use-toast';
 
 const Methods = () => {
   const [methods, setMethods] = useState([
@@ -27,6 +28,25 @@ const Methods = () => {
     },
   ]);
 
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleCreateMethod = (data: MethodFormData) => {
+    const newMethod = {
+      id: methods.length + 1,
+      name: data.name,
+      class: data.belongsToClass,
+      returnType: data.returnType,
+      parameters: data.parameters.length,
+      localVars: 0
+    };
+    setMethods([...methods, newMethod]);
+    toast({
+      title: "Método creado",
+      description: `El método "${data.name}" ha sido creado exitosamente.`,
+    });
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -35,44 +55,14 @@ const Methods = () => {
           <h1 className="text-3xl font-bold text-gray-900">Métodos</h1>
           <p className="text-gray-600">Gestiona los métodos del sistema</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button 
+          className="flex items-center gap-2"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
           <Plus className="h-4 w-4" />
           Nuevo Método
         </Button>
       </div>
-
-      {/* Create Method */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Crear Nuevo Método</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Input placeholder="Nombre del método" />
-            <Select>
-              <SelectTrigger>
-                <SelectValue placeholder="Clase asociada" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="UserRepository">UserRepository</SelectItem>
-                <SelectItem value="BaseEntity">BaseEntity</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <Input placeholder="Tipo de retorno" />
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Parámetros</label>
-            <div className="flex gap-2">
-              <Input placeholder="Tipo" />
-              <Input placeholder="Nombre" />
-              <Button variant="outline" size="sm">
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-          <Button>Crear Método</Button>
-        </CardContent>
-      </Card>
 
       {/* Methods List */}
       <div className="grid gap-4">
@@ -105,6 +95,13 @@ const Methods = () => {
           </Card>
         ))}
       </div>
+
+      <CreateMethodModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateMethod}
+        availableClasses={['UserRepository', 'BaseEntity', 'Service', 'Controller']}
+      />
     </div>
   );
 };

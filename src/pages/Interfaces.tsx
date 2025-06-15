@@ -2,15 +2,34 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Edit, Trash2, Layers } from 'lucide-react';
+import CreateInterfaceModal from '@/components/modals/CreateInterfaceModal';
+import { InterfaceFormData } from '@/schemas/formSchemas';
+import { useToast } from '@/hooks/use-toast';
 
 const Interfaces = () => {
   const [interfaces, setInterfaces] = useState([
     { id: 1, name: 'IRepository', namespace: 'Data.Access', methods: 4 },
     { id: 2, name: 'IService', namespace: 'Business.Logic', methods: 2 },
   ]);
+
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleCreateInterface = (data: InterfaceFormData) => {
+    const newInterface = {
+      id: interfaces.length + 1,
+      name: data.name,
+      namespace: data.namespace,
+      methods: data.methodSignatures.length
+    };
+    setInterfaces([...interfaces, newInterface]);
+    toast({
+      title: "Interfaz creada",
+      description: `La interfaz "${data.name}" ha sido creada exitosamente.`,
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -20,25 +39,14 @@ const Interfaces = () => {
           <h1 className="text-3xl font-bold text-gray-900">Interfaces</h1>
           <p className="text-gray-600">Gestiona las interfaces del sistema</p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button 
+          className="flex items-center gap-2"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
           <Plus className="h-4 w-4" />
           Nueva Interface
         </Button>
       </div>
-
-      {/* Create Interface */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Crear Nueva Interface</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4">
-            <Input placeholder="Nombre de la interface" />
-            <Input placeholder="Namespace asociado" />
-          </div>
-          <Button className="mt-4">Crear Interface</Button>
-        </CardContent>
-      </Card>
 
       {/* Interfaces List */}
       <div className="grid gap-4">
@@ -69,6 +77,13 @@ const Interfaces = () => {
           </Card>
         ))}
       </div>
+
+      <CreateInterfaceModal
+        open={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateInterface}
+        availableNamespaces={['System.Core', 'Business.Logic', 'Data.Access', 'Domain.Models']}
+      />
     </div>
   );
 };
